@@ -1,0 +1,41 @@
+{
+  "name": "jwaladiamonds.com",
+  "version": "1.0.0",
+  "description": "Jwala Diamonds Website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwaladiamonds/jwaladiamonds.com.git"
+  },
+  "keywords": [
+    "jwala",
+    "diamonds",
+    "jewellery",
+    "website"
+  ],
+  "author": "Nikhil John",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jwaladiamonds/jwaladiamonds.com/issues"
+  },
+  "homepage": "https://jwaladiamonds.com",
+  "devDependencies": {
+    "browser-sync": "^2.27.5",
+    "del": "^6.0.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^3.1.0",
+    "gulp-rev": "^9.0.0",
+    "gulp-sass": "^5.0.0",
+    "gulp-uglify": "^3.0.2",
+    "node-sass": "^6.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^5.0.2"
+  }
+}
