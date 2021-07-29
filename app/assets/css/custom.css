@@ -1,4 +1,9 @@
 /*!
+ * Jwala Diamonds Website
+ * Copyright 2021 Jwala Diamonds
+ * Licensed under MIT
+ */
+/*!
  * Bootstrap v5.0.2 (https://getbootstrap.com/)
  * Copyright 2011-2021 The Bootstrap Authors
  * Copyright 2011-2021 Twitter, Inc.
@@ -7499,6 +7504,3 @@ textarea.form-control-lg {
     display: inline-flex !important; }
   .d-print-none {
     display: none !important; } }
-
-body {
-  background-color: greenyellow; }
