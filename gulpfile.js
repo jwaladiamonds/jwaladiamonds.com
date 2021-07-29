@@ -41,15 +41,6 @@ const paths = {
   }
 }
 
-function hash384 () {
-  const cssBuffer = fs.readFileSync(paths.public.css_file)
-  const jsBuffer = fs.readFileSync(paths.public.js_file)
-  return {
-    css: 'sha384-' + sha384(cssBuffer),
-    js: 'sha384-' + sha384(jsBuffer)
-  }
-}
-
 gulp.task('clean-js', function () {
   return del([paths.public.js_dir])
 })
@@ -92,21 +83,46 @@ gulp.task('sass', function () {
 })
 
 gulp.task('inject', function (done) {
-  const json = hash384()
+  let injectCSS = true
+  let injectJS = true
+  let cssTag, newCSS, jsTag, newJS
+  let injected = null
 
-  const cssTag = /<link href=.+all\.min\.css.+(\n?.*integrity.+\n?.+crossorigin.+)?>/i
-  const newCSS = `<link href="${paths.public.css_html}" rel="stylesheet"
-  integrity="${json.css}" crossorigin="anonymous">`
+  try {
+    const cssBuffer = fs.readFileSync(paths.public.css_file)
+    const cssHash = 'sha384-' + sha384(cssBuffer)
+    cssTag = /<link href=.+all\.min\.css.+(\n?.*integrity.+\n?.+crossorigin.+)?>/i
+    newCSS = `<link href="${paths.public.css_html}" rel="stylesheet"
+    integrity="${cssHash}" crossorigin="anonymous">`
+  } catch (error) {
+    injectCSS = false
+  }
 
-  const jsTag = /<script src=.+all\.min\.js.+(\n?.*integrity.+\n?.+crossorigin.+)?><\/script>/i
-  const newJS = `<script src="${paths.public.js_html}"
-  integrity="${json.js}" crossorigin="anonymous"></script>`
+  try {
+    const jsBuffer = fs.readFileSync(paths.public.js_file)
+    const jsHash = 'sha384-' + sha384(jsBuffer)
+    jsTag = /<script src=.+all\.min\.js.+(\n?.*integrity.+\n?.+crossorigin.+)?><\/script>/i
+    newJS = `<script src="${paths.public.js_html}"
+    integrity="${jsHash}" crossorigin="anonymous"></script>`
+  } catch (error) {
+    injectJS = false
+  }
 
   fs.readFile('./app/index.html', 'utf8', (err, html) => {
     if (err) throw (err)
 
-    const partialInjected = html.replace(cssTag, newCSS)
-    const injected = partialInjected.replace(jsTag, newJS)
+    if (injectCSS && injectJS) {
+      injected = html.replace(cssTag, newCSS)
+      injected = injected.replace(jsTag, newJS)
+    } else {
+      if (injectCSS) {
+        injected = html.replace(cssTag, newCSS)
+      } else if (injectJS) {
+        injected = html.replace(jsTag, newJS)
+      } else {
+        throw (Error('Nothing to inject'))
+      }
+    }
 
     fs.writeFile('./app/index.html', injected, 'utf8', function (err) {
       if (err) throw (err)
