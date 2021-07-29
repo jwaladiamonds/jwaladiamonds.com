@@ -3,16 +3,14 @@ const del = require('del')
 const gulp = require('gulp')
 const crypto = require('crypto')
 const babel = require('gulp-babel')
-const uglify = require('gulp-uglify')
-const minify = require('gulp-minify')
+const terser = require('gulp-terser')
 const concat = require('gulp-concat')
 const gulpSass = require('gulp-sass')
 const nodeSass = require('node-sass')
-const cleanCss = require('gulp-clean-css')
+const postcss = require('gulp-postcss')
 const browserSync = require('browser-sync').create()
 
 const sass = gulpSass(nodeSass)
-
 const sha384 = (buffer) => crypto
   .createHash('sha384')
   .update(buffer)
@@ -33,54 +31,33 @@ const paths = {
     css: 'all.min.css',
     css_dir: 'app/public/css/',
     css_file: 'app/public/css/all.min.css',
-    css_html: 'public/css/all.min.css',
+    css_final: 'public/css/all.min.css',
     js: 'all.min.js',
     js_dir: 'app/public/js/',
     js_file: 'app/public/js/all.min.js',
-    js_html: 'public/js/all.min.js'
+    js_final: 'public/js/all.min.js'
   }
 }
 
-gulp.task('clean-js', function () {
-  return del([paths.public.js_dir])
-})
-
-gulp.task('clean-css', function () {
-  return del([paths.public.css_dir])
-})
-
+gulp.task('clean-js', () => del([paths.public.js_dir]))
+gulp.task('clean-css', () => del([paths.public.css_dir]))
 gulp.task('clean', gulp.series(['clean-js', 'clean-css']))
 
-gulp.task('js', function () {
-  return gulp
-    .src([paths.assets.js])
-    .pipe(babel())
-    .pipe(uglify())
-    .pipe(concat(paths.public.js))
-    .pipe(minify({
-      ext: {
-        min: '.js'
-      },
-      noSource: true
-    }))
-    .pipe(gulp.dest(paths.public.js_dir))
-})
+gulp.task('js', () => gulp.src([paths.assets.js])
+  .pipe(babel())
+  .pipe(concat(paths.public.js))
+  .pipe(terser())
+  .pipe(gulp.dest(paths.public.js_dir)))
 
-gulp.task('css', function () {
-  return gulp
-    .src([paths.assets.css])
-    .pipe(concat(paths.public.css))
-    .pipe(cleanCss())
-    .pipe(gulp.dest(paths.public.css_dir))
-})
+gulp.task('css', () => gulp.src([paths.assets.css])
+  .pipe(concat(paths.public.css))
+  .pipe(postcss([require('autoprefixer'), require('cssnano')]))
+  .pipe(gulp.dest(paths.public.css_dir)))
 
-gulp.task('sass', function () {
-  return gulp
-    .src(paths.assets.sass)
-    .pipe(sass().on('error', sass.logError))
-    .pipe(gulp.dest(paths.assets.css_dir))
-    .pipe(browserSync.stream())
-})
+gulp.task('sass', () => gulp.src(paths.assets.sass)
+  .pipe(sass().on('error', sass.logError))
+  .pipe(gulp.dest(paths.assets.css_dir))
+  .pipe(browserSync.stream()))
 
 gulp.task('inject', function (done) {
   let injectCSS = true
@@ -92,9 +69,10 @@ gulp.task('inject', function (done) {
     const cssBuffer = fs.readFileSync(paths.public.css_file)
     const cssHash = 'sha384-' + sha384(cssBuffer)
     cssTag = /<link href=.+all\.min\.css.+(\n?.*integrity.+\n?.+crossorigin.+)?>/i
-    newCSS = `<link href="${paths.public.css_html}" rel="stylesheet"
+    newCSS = `<link href="${paths.public.css_final}" rel="stylesheet"
     integrity="${cssHash}" crossorigin="anonymous">`
   } catch (error) {
+    console.log(error)
     injectCSS = false
   }
 
@@ -102,32 +80,22 @@ gulp.task('inject', function (done) {
     const jsBuffer = fs.readFileSync(paths.public.js_file)
     const jsHash = 'sha384-' + sha384(jsBuffer)
     jsTag = /<script src=.+all\.min\.js.+(\n?.*integrity.+\n?.+crossorigin.+)?><\/script>/i
-    newJS = `<script src="${paths.public.js_html}"
+    newJS = `<script src="${paths.public.js_final}"
     integrity="${jsHash}" crossorigin="anonymous"></script>`
   } catch (error) {
+    console.log(error)
     injectJS = false
   }
 
   fs.readFile('./app/index.html', 'utf8', (err, html) => {
     if (err) throw (err)
 
-    if (injectCSS && injectJS) {
-      injected = html.replace(cssTag, newCSS)
-      injected = injected.replace(jsTag, newJS)
-    } else {
-      if (injectCSS) {
-        injected = html.replace(cssTag, newCSS)
-      } else if (injectJS) {
-        injected = html.replace(jsTag, newJS)
-      } else {
-        throw (Error('Nothing to inject'))
-      }
-    }
+    if (injectCSS && injectJS) injected = html.replace(cssTag, newCSS).replace(jsTag, newJS)
+    else if (injectCSS) injected = html.replace(cssTag, newCSS)
+    else if (injectJS) injected = html.replace(jsTag, newJS)
+    else throw (new Error('Nothing to inject'))
 
-    fs.writeFile('./app/index.html', injected, 'utf8', function (err) {
-      if (err) throw (err)
-      done()
-    })
+    fs.writeFile('./app/index.html', injected, 'utf8', (err) => done(err))
   })
 })
 
