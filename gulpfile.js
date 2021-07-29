@@ -16,7 +16,7 @@ const sha384 = (buffer) => crypto
 
 const paths = {
   root_dir: './app',
-  index: './index.html',
+  index: './app/index.html',
   html: 'app/*.html',
   assets: {
     css_dir: 'app/assets/css/',
@@ -85,7 +85,7 @@ gulp.task('inject', function (done) {
     injectJS = false
   }
 
-  fs.readFile('./app/index.html', 'utf8', (err, html) => {
+  fs.readFile(paths.index, 'utf8', (err, html) => {
     if (err) throw (err)
 
     if (injectCSS && injectJS) injected = html.replace(cssTag, newCSS).replace(jsTag, newJS)
@@ -93,7 +93,7 @@ gulp.task('inject', function (done) {
     else if (injectJS) injected = html.replace(jsTag, newJS)
     else throw (new Error('Nothing to inject'))
 
-    fs.writeFile('./app/index.html', injected, 'utf8', (err) => done(err))
+    fs.writeFile(paths.index, injected, 'utf8', (err) => done(err))
   })
 })
 
@@ -103,10 +103,7 @@ gulp.task('reload', function (done) {
 })
 
 gulp.task('serve', function (done) {
-  browserSync.init({
-    server: paths.root_dir,
-    index: paths.index
-  })
+  browserSync.init({ server: paths.root_dir })
   gulp.watch(paths.assets.js, gulp.series(['js', 'inject']))
   gulp.watch(paths.assets.css, gulp.series(['css', 'inject']))
   gulp.watch(paths.assets.sass, gulp.series(['sass']))
