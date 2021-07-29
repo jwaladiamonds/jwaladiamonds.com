@@ -5,12 +5,10 @@ const crypto = require('crypto')
 const babel = require('gulp-babel')
 const terser = require('gulp-terser')
 const concat = require('gulp-concat')
-const gulpSass = require('gulp-sass')
-const nodeSass = require('node-sass')
 const postcss = require('gulp-postcss')
 const browserSync = require('browser-sync').create()
+const sass = require('gulp-sass')(require('node-sass'))
 
-const sass = gulpSass(nodeSass)
 const sha384 = (buffer) => crypto
   .createHash('sha384')
   .update(buffer)
