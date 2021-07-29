@@ -1,17 +1,16 @@
 let posts
-alert("hello")
 document.body.onload = async (e) => {
-    console.log("document loaded!")
-    posts = await fetch("https://www.techiediaries.com/api/feed.json").then(function (response) {
-        return response.json()
+  console.log('document loaded!')
+  posts = await fetch('https://www.techiediaries.com/api/feed.json').then(function (response) {
+    return response.json()
+  })
+  posts.forEach(element => {
+    const child = document.createElement('div')
+    child.classList.add('mt-1');
+    ['card'].forEach((v) => {
+      child.classList.add(v)
     })
-    posts.forEach(element => {
-        let child = document.createElement('div')
-        child.classList.add('mt-1');
-        ['card'].forEach((v) => {
-            child.classList.add(v)
-        })
-        child.innerHTML = `
+    child.innerHTML = `
                 <hr>
                 <div class="card-body">
                     <h2 class="card-title">${element.title}</h2>
@@ -22,6 +21,6 @@ document.body.onload = async (e) => {
                     </div>
 
                 </div>`
-        document.getElementById("postsDiv").appendChild(child)
-    })
+    document.getElementById('postsDiv').appendChild(child)
+  })
 }

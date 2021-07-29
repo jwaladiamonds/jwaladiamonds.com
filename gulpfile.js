@@ -8,7 +8,6 @@ const minify = require('gulp-minify')
 const concat = require('gulp-concat')
 const gulpSass = require('gulp-sass')
 const nodeSass = require('node-sass')
-const htmlparser = require("htmlparser2")
 const cleanCss = require('gulp-clean-css')
 const browserSync = require('browser-sync').create()
 
@@ -38,7 +37,7 @@ const paths = {
     js: 'all.min.js',
     js_dir: 'app/public/js/',
     js_file: 'app/public/js/all.min.js',
-    js_html: 'public/js/all.min.js',
+    js_html: 'public/js/all.min.js'
   }
 }
 
@@ -93,29 +92,25 @@ gulp.task('sass', function () {
 })
 
 gulp.task('inject', function (done) {
-
   const json = hash384()
 
-  const css_tag = /<link href=.+all\.min\.css.+(\n?.*integrity.+\n?.+crossorigin.+)?>/i
-  let new_css = `<link href="${paths.public.css_html}" rel="stylesheet"
+  const cssTag = /<link href=.+all\.min\.css.+(\n?.*integrity.+\n?.+crossorigin.+)?>/i
+  const newCSS = `<link href="${paths.public.css_html}" rel="stylesheet"
   integrity="${json.css}" crossorigin="anonymous">`
 
-  const js_tag = /<script src=.+all\.min\.js.+(\n?.*integrity.+\n?.+crossorigin.+)?><\/script>/i
-  let new_js = `<script src="${paths.public.js_html}"
+  const jsTag = /<script src=.+all\.min\.js.+(\n?.*integrity.+\n?.+crossorigin.+)?><\/script>/i
+  const newJS = `<script src="${paths.public.js_html}"
   integrity="${json.js}" crossorigin="anonymous"></script>`
 
   fs.readFile('./app/index.html', 'utf8', (err, html) => {
-
     if (err) throw (err)
 
-    let partialInjected = html.replace(css_tag, new_css)
-    const injected = partialInjected.replace(js_tag, new_js)
+    const partialInjected = html.replace(cssTag, newCSS)
+    const injected = partialInjected.replace(jsTag, newJS)
 
     fs.writeFile('./app/index.html', injected, 'utf8', function (err) {
-
       if (err) throw (err)
       done()
-
     })
   })
 })
@@ -128,7 +123,7 @@ gulp.task('reload', function (done) {
 gulp.task('serve', function (done) {
   browserSync.init({
     server: paths.root_dir,
-    index: paths.index,
+    index: paths.index
   })
   gulp.watch(paths.assets.js, gulp.series(['js', 'inject']))
   gulp.watch(paths.assets.css, gulp.series(['css', 'inject']))
