@@ -6,6 +6,7 @@ const babel = require('gulp-babel')
 const terser = require('gulp-terser')
 const concat = require('gulp-concat')
 const postcss = require('gulp-postcss')
+const purgecss = require('gulp-purgecss')
 const browserSync = require('browser-sync').create()
 const sass = require('gulp-sass')(require('node-sass'))
 
@@ -49,6 +50,7 @@ gulp.task('js', () => gulp.src([paths.assets.js])
 
 gulp.task('css', () => gulp.src([paths.assets.css])
   .pipe(concat(paths.public.css))
+  .pipe(purgecss({ content: [paths.html] }))
   .pipe(postcss([require('autoprefixer'), require('cssnano')]))
   .pipe(gulp.dest(paths.public.css_dir)))
 
