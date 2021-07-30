@@ -1,0 +1,14 @@
+/*!
+ * Jwala Diamonds Website
+ * Copyright 2021 Jwala Diamonds
+ * Licensed under MIT
+ */
+@import '../../../node_modules/bootstrap/scss/bootstrap.scss';
+
+@import 'colors';
+
+body {
+    height: 100vh;
+    background: $dark;
+    background: $gradiantPeacock;
+}
