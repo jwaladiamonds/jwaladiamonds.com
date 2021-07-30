@@ -7504,8 +7504,3 @@ textarea.form-control-lg {
     display: inline-flex !important; }
   .d-print-none {
     display: none !important; } }
-
-body {
-  height: 100vh;
-  background: #383C3D;
-  background: linear-gradient(#383C3D, #001011); }
