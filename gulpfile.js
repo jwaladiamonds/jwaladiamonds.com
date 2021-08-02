@@ -5,12 +5,11 @@ const crypto = require('crypto')
 const babel = require('gulp-babel')
 const terser = require('gulp-terser')
 const concat = require('gulp-concat')
-const gulpSass = require('gulp-sass')
-const nodeSass = require('node-sass')
 const postcss = require('gulp-postcss')
+const purgecss = require('gulp-purgecss')
 const browserSync = require('browser-sync').create()
+const sass = require('gulp-sass')(require('node-sass'))
 
-const sass = gulpSass(nodeSass)
 const sha384 = (buffer) => crypto
   .createHash('sha384')
   .update(buffer)
@@ -18,7 +17,7 @@ const sha384 = (buffer) => crypto
 
 const paths = {
   root_dir: './app',
-  index: './index.html',
+  index: './app/index.html',
   html: 'app/*.html',
   assets: {
     css_dir: 'app/assets/css/',
@@ -51,6 +50,7 @@ gulp.task('js', () => gulp.src([paths.assets.js])
 
 gulp.task('css', () => gulp.src([paths.assets.css])
   .pipe(concat(paths.public.css))
+  .pipe(purgecss({ content: [paths.html] }))
   .pipe(postcss([require('autoprefixer'), require('cssnano')]))
   .pipe(gulp.dest(paths.public.css_dir)))
 
@@ -87,7 +87,7 @@ gulp.task('inject', function (done) {
     injectJS = false
   }
 
-  fs.readFile('./app/index.html', 'utf8', (err, html) => {
+  fs.readFile(paths.index, 'utf8', (err, html) => {
     if (err) throw (err)
 
     if (injectCSS && injectJS) injected = html.replace(cssTag, newCSS).replace(jsTag, newJS)
@@ -95,7 +95,7 @@ gulp.task('inject', function (done) {
     else if (injectJS) injected = html.replace(jsTag, newJS)
     else throw (new Error('Nothing to inject'))
 
-    fs.writeFile('./app/index.html', injected, 'utf8', (err) => done(err))
+    fs.writeFile(paths.index, injected, 'utf8', (err) => done(err))
   })
 })
 
@@ -105,10 +105,7 @@ gulp.task('reload', function (done) {
 })
 
 gulp.task('serve', function (done) {
-  browserSync.init({
-    server: paths.root_dir,
-    index: paths.index
-  })
+  browserSync.init({ server: paths.root_dir })
   gulp.watch(paths.assets.js, gulp.series(['js', 'inject']))
   gulp.watch(paths.assets.css, gulp.series(['css', 'inject']))
   gulp.watch(paths.assets.sass, gulp.series(['sass']))
